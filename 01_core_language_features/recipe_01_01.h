@@ -112,9 +112,9 @@ void execute()
     // less typing and less concern for actual types
     {
         std::map<int, std::string> m {
-            { 1, "first" },
-            { 2, "second" },
-            { 3, "third" }
+            { 1, "one" },
+            { 2, "two" },
+            { 3, "three" }
         };
 
         for (std::map<int, std::string>::const_iterator it = m.cbegin();
