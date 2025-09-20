@@ -1,5 +1,6 @@
 #include "recipe_08_01.h"
 #include "recipe_08_02.h"
+#include "recipe_08_06.h"
 
 int main()
 {
@@ -9,6 +10,10 @@ int main()
 
     std::cout << "[recipe_08_02]" << std::endl << std::endl;
     recipe_08_02::execute();
+    std::cout << std::endl;
+
+    std::cout << "[recipe_08_06]" << std::endl << std::endl;
+    recipe_08_06::execute();
     std::cout << std::endl;
 
     return 0;
