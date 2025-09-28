@@ -1,14 +1,11 @@
 #pragma once
 
-#include <thread>
-#include <mutex>
-#include <condition_variable>
 #include <iostream>
+#include <array>
+#include <algorithm>
+#include <condition_variable>
 #include <queue>
 #include <random>
-#include <array>
-#include <vector>
-#include <algorithm>
 
 namespace recipe_08_05
 {
