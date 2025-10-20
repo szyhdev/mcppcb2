@@ -101,4 +101,20 @@ auto foldr_variadic(F &&f, T head, Ts ...rest)
     return f(foldr_variadic(std::forward<F>(f), rest...), head);
 }
 
+template <typename F, typename G>
+auto compose(F &&f, G &&g)
+{
+    return [=] (auto x) {
+        return f(g(x));
+    };
+}
+
+template <typename F, typename ...R>
+auto compose(F &&f, R &&...r)
+{
+    return [=] (auto x) {
+        return f(compose(r...)(x));
+    };
+}
+
 }
