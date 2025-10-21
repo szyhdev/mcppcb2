@@ -1,8 +1,13 @@
+#include "recipe_03_05.h"
 #include "recipe_03_07.h"
 #include "recipe_03_08.h"
 
 int main()
 {
+    std::cout << "[recipe_03_05]" << std::endl << std::endl;
+    recipe_03_05::execute();
+    std::cout << std::endl;
+
     std::cout << "[recipe_03_07]" << std::endl << std::endl;
     recipe_03_07::execute();
     std::cout << std::endl;
