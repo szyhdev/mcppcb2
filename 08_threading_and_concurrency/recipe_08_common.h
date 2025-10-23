@@ -2,8 +2,6 @@
 
 #include "../include/recipe_common.h"
 
-#include <chrono>
-
 inline void print_time(std::string const &prefix = "")
 {
     auto now = std::chrono::system_clock::now();
