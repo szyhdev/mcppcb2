@@ -2,9 +2,6 @@
 
 #include "recipe_06_common.h"
 
-#include <chrono>
-#include <functional>
-
 namespace recipe_06_04
 {
 
@@ -12,19 +9,6 @@ void func(int const count = 100000000)
 {
     for (int i = 0; i < count; ++i);
 }
-
-template <typename Time = std::chrono::microseconds,
-        typename Clock = std::chrono::high_resolution_clock>
-struct perf_timer
-{
-    template <typename F, typename ...Args>
-    static Time duration(F &&f, Args ...args) {
-        auto start = Clock::now();
-        std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
-        auto end = Clock::now();
-        return std::chrono::duration_cast<Time>(end - start);
-    }
-};
 
 template <typename T>
 void print_clock(std::string const &clock_name)
@@ -53,7 +37,7 @@ void execute()
 
     // measure the execution of a function with a reusable component
     {
-        auto t = perf_timer<>::duration(func, 100000000);
+        auto t = recipe_common::perf_timer<>::duration(func, 100000000);
 
         std::cout << std::chrono::duration<double, std::milli>(t).count() <<
                 "ms" << std::endl;
@@ -73,11 +57,11 @@ void execute()
 
     // return duration value rather than number of ticks
     {
-        auto t1 = perf_timer<std::chrono::nanoseconds>::duration(func, 100000000);
+        auto t1 = recipe_common::perf_timer<std::chrono::nanoseconds>::duration(func, 100000000);
         std::cout << t1 << std::endl;
-        auto t2 = perf_timer<std::chrono::microseconds>::duration(func, 100000000);
+        auto t2 = recipe_common::perf_timer<std::chrono::microseconds>::duration(func, 100000000);
         std::cout << t2 << std::endl;
-        auto t3 = perf_timer<std::chrono::milliseconds>::duration(func, 100000000);
+        auto t3 = recipe_common::perf_timer<std::chrono::milliseconds>::duration(func, 100000000);
         std::cout << t3 << std::endl;
 
         auto total = t1 + t2 + t3;

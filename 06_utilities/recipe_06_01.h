@@ -2,9 +2,6 @@
 
 #include "recipe_06_common.h"
 
-#include <cassert>
-#include <chrono>
-
 namespace recipe_06_01
 {
 

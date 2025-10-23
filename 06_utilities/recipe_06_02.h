@@ -2,8 +2,6 @@
 
 #include "recipe_06_common.h"
 
-#include <chrono>
-
 namespace recipe_06_02
 {
 
