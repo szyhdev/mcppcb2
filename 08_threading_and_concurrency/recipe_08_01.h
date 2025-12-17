@@ -70,7 +70,7 @@ void execute()
         std::thread t1(func1);
         t1.join();
 
-        std::thread t2([]() {
+        std::thread t2([] () {
             std::cout << "lambda1: thread func without params" << std::endl;
         });
         t2.join();
