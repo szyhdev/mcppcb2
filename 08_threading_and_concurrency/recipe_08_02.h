@@ -16,7 +16,6 @@ std::mutex g_mutex;
 
 void thread_func_1()
 {
-    std::lock_guard<std::mutex> lock(g_mutex);
     std::cout << "running thread " << std::this_thread::get_id() << std::endl;
     std::this_thread::yield();
     std::this_thread::sleep_for(1s);
@@ -24,6 +23,25 @@ void thread_func_1()
 }
 
 void thread_func_2()
+{
+    g_mutex.lock();
+    std::cout << "running thread " << std::this_thread::get_id() << std::endl;
+    std::this_thread::yield();
+    std::this_thread::sleep_for(1s);
+    std::cout << "done in thread " << std::this_thread::get_id() << std::endl;
+    g_mutex.unlock();
+}
+
+void thread_func_3()
+{
+    std::lock_guard<std::mutex> lock(g_mutex);
+    std::cout << "running thread " << std::this_thread::get_id() << std::endl;
+    std::this_thread::yield();
+    std::this_thread::sleep_for(1s);
+    std::cout << "done in thread " << std::this_thread::get_id() << std::endl;
+}
+
+void thread_func_4()
 {
     {
         std::lock_guard<std::mutex> lock(g_mutex);
@@ -37,16 +55,6 @@ void thread_func_2()
         std::lock_guard<std::mutex> lock(g_mutex);
         std::cout << "done in thread " << std::this_thread::get_id() << std::endl;
     }
-}
-
-void thread_func_3()
-{
-    g_mutex.lock();
-    std::cout << "running thread " << std::this_thread::get_id() << std::endl;
-    std::this_thread::yield();
-    std::this_thread::sleep_for(1s);
-    std::cout << "done in thread " << std::this_thread::get_id() << std::endl;
-    g_mutex.unlock();
 }
 
 template <class M>
@@ -81,35 +89,31 @@ struct container
 };
 
 template <typename T>
-void move_between_deadlock(container<T> &c1, container<T> &c2, T const value)
-{
-    std::lock_guard<std::mutex> l1(c1.mutex);
-    std::lock_guard<std::mutex> l2(c2.mutex);
-
-    c1.data.erase(std::remove(c1.data.begin(), c1.data.end(), value),
-            c1.data.end());
-    c2.data.push_back(value);
-}
-
-template <typename T>
 void move_between(container<T> &c1, container<T> &c2, T const value)
 {
-    // 1. lock_guard in C++11
+    // 1. using lock_guard in C++11 (deadlock)
+    // std::lock_guard<std::mutex> l1(c1.mutex);
+    // std::lock_guard<std::mutex> l2(c2.mutex);
+
+    // 2. using lock in C++11
     // std::lock(c1.mutex, c2.mutex);
     // std::lock_guard<std::mutex> l1(c1.mutex, std::adopt_lock);
     // std::lock_guard<std::mutex> l2(c2.mutex, std::adopt_lock);
 
-    // 2. scope_lock in C++17
+    // 3. using scope_lock in C++17
     std::scoped_lock lock(c1.mutex, c2.mutex);
 
-    c1.data.erase(std::remove(c1.data.begin(), c1.data.end(), value),
-            c1.data.end());
-    c2.data.push_back(value);
+    auto it = std::remove(c1.data.begin(), c1.data.end(), value);
+    auto count = c1.data.end() - it;
+    c1.data.erase(it, c1.data.end());
+    for (auto i = 0; i < count; ++i) {
+        c2.data.push_back(value);
+    }
 }
 
 void execute()
 {
-    // acquire a lock on mutex with std::lock_guard when entering the thread
+    // multithreading without mutex (race condition)
     {
         std::vector<std::thread> threads;
         for (int i = 0; i < 3; ++i) {
@@ -123,7 +127,7 @@ void execute()
         std::cout << std::endl;
     }
 
-    // acquire a lock on mutex with std::lock_guard when accessing shared resource
+    // acquire a lock on mutex with lock/unlock
     {
         std::vector<std::thread> threads;
         for (int i = 0; i < 3; ++i) {
@@ -137,11 +141,25 @@ void execute()
         std::cout << std::endl;
     }
 
-    // acquire a lock on mutex with lock()
+    // acquire a lock on mutex with std::lock_guard when entering thread
     {
         std::vector<std::thread> threads;
         for (int i = 0; i < 3; ++i) {
             threads.emplace_back(thread_func_3);
+        }
+
+        for (auto &t : threads) {
+            t.join();
+        }
+
+        std::cout << std::endl;
+    }
+
+    // acquire a lock on mutex with std::lock_guard when accessing shared resource
+    {
+        std::vector<std::thread> threads;
+        for (int i = 0; i < 3; ++i) {
+            threads.emplace_back(thread_func_4);
         }
 
         for (auto &t : threads) {
@@ -165,11 +183,6 @@ void execute()
         c2.data.push_back(6);
         recipe_common::print_collection(c2.data, "c2.data: ");
 
-        // 1. deadlock manner
-        // std::thread t1(move_between_deadlock<int>, std::ref(c1), std::ref(c2), 3);
-        // std::thread t2(move_between_deadlock<int>, std::ref(c2), std::ref(c1), 6);
-
-        // 2. deadlock avoidance manner
         std::thread t1(move_between<int>, std::ref(c1), std::ref(c2), 3);
         std::thread t2(move_between<int>, std::ref(c2), std::ref(c1), 6);
 
