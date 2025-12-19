@@ -1,6 +1,7 @@
 #pragma once
 
-#include <iostream>
+#include "recipe_08_common.h"
+
 #include <future>
 
 namespace recipe_08_07
@@ -12,10 +13,7 @@ std::mutex g_mutex;
 
 void do_something()
 {
-    // simulate long running operation
-    {
-        std::this_thread::sleep_for(2s);
-    }
+    std::this_thread::sleep_for(2s);
 
     std::lock_guard<std::mutex> lock(g_mutex);
     std::cout << "operation 1 done" << std::endl;
@@ -23,10 +21,7 @@ void do_something()
 
 void do_something_else()
 {
-    // simulate long running operation
-    {
-        std::this_thread::sleep_for(1s);
-    }
+    std::this_thread::sleep_for(1s);
 
     std::lock_guard<std::mutex> lock(g_mutex);
     std::cout << "operation 2 done" << std::endl;
@@ -34,10 +29,7 @@ void do_something_else()
 
 int compute_something()
 {
-    // simulate long running operation
-    {
-        std::this_thread::sleep_for(2s);
-    }
+    std::this_thread::sleep_for(2s);
 
     std::cout << "computation 1 done" << std::endl;
     return 42;
@@ -45,10 +37,7 @@ int compute_something()
 
 int compute_something_else()
 {
-    // simulate long running operation
-    {
-        std::this_thread::sleep_for(1s);
-    }
+    std::this_thread::sleep_for(1s);
 
     std::cout << "computation 2 done" << std::endl;
     return 24;
@@ -68,7 +57,7 @@ void execute()
     }
 
     // execute a function asynchronously on another thread when current thread
-    // continues its execution, until the result is needed
+    // continues its execution until the result is needed
     {
         auto f = std::async(std::launch::async, compute_something);
         auto value = compute_something_else();
