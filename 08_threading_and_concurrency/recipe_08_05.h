@@ -1,10 +1,8 @@
 #pragma once
 
-#include <iostream>
-#include <array>
-#include <algorithm>
+#include "recipe_08_common.h"
+
 #include <condition_variable>
-#include <queue>
 #include <random>
 
 namespace recipe_08_05
@@ -12,89 +10,51 @@ namespace recipe_08_05
 
 using namespace std::chrono_literals;
 
-std::mutex print_mutes;
-std::mutex queue_mutex;
 std::condition_variable buffer_cv;
+std::mutex buffer_mutex;
 std::queue<int> buffer;
-bool done;
+
+std::mutex print_mutex;
+bool all_done;
 
 void producer(int const id, std::mt19937 &generator,
         std::uniform_int_distribution<int> &sleep_dist,
         std::uniform_int_distribution<int> &data_dist)
 {
     for (int i = 0; i < 5; ++i) {
-        // simulate work
         std::this_thread::sleep_for(std::chrono::seconds(sleep_dist(generator)));
 
-        // generate data
         int value = id * 100 + data_dist(generator);
 
         {
-            std::unique_lock<std::mutex> locker(print_mutes);
-            std::cout << "[produced]: " << value << std::endl;
+            std::unique_lock<std::mutex> buffer_lock(buffer_mutex);
+            buffer.push(value);
         }
 
-        // notify consumers
         {
-            std::unique_lock<std::mutex> locker(queue_mutex);
-            buffer.push(value);
-            buffer_cv.notify_one();
+            std::unique_lock<std::mutex> print_lock(print_mutex);
+            std::cout << "produced: " << value << std::endl;
         }
+
+        buffer_cv.notify_one();
     }
 }
 
 void consumer()
 {
-    // loop until end is signaled
-    while (!done) {
-        std::unique_lock<std::mutex> locker(queue_mutex);
+    while (!all_done) {
+        std::unique_lock<std::mutex> buffer_lock(buffer_mutex);
 
-        buffer_cv.wait_for(locker, std::chrono::seconds(1),
+        buffer_cv.wait_for(buffer_lock, std::chrono::seconds(1),
                 [&] () {
                     return !buffer.empty();
                 });
 
-        // if there are values in the queue process them
-        while (!done && !buffer.empty()) {
-            std::unique_lock<std::mutex> locker(print_mutes);
-            std::cout << "[consumed]: " << buffer.front() << std::endl;
+        while (!all_done && !buffer.empty()) {
+            std::unique_lock<std::mutex> print_lock(print_mutex);
+            std::cout << "consumed: " << buffer.front() << std::endl;
             buffer.pop();
         }
-    }
-}
-
-std::mutex mutex_any;
-std::condition_variable_any cv_any;
-int cargo = 0;
-
-bool shipment_available()
-{
-    return cargo != 0;
-}
-
-void cargo_producer(int n)
-{
-    for (int i = 0; i < n; ++i) {
-        while (shipment_available()) {
-            std::this_thread::yield();
-        }
-
-        mutex_any.lock();
-        cargo = i + 1;
-        cv_any.notify_one();
-        mutex_any.unlock();
-    }
-}
-
-void cargo_consumer(int n)
-{
-    for (int i = 0; i < n; ++i) {
-        mutex_any.lock();
-        cv_any.wait(mutex_any, shipment_available);
-
-        std::cout << cargo << std::endl;
-        cargo = 0;
-        mutex_any.unlock();
     }
 }
 
@@ -102,50 +62,43 @@ void execute()
 {
     // synchronize threads with notifications on condition variables
     {
-        std::condition_variable cv;
+        std::condition_variable data_cv;
 
-        std::mutex cv_mutex;  // data mutex
-        std::mutex io_mutex;  // I/O mutex
+        std::mutex data_mutex;
+        std::mutex io_mutex;
 
         int data = 0;
 
-        std::thread p([&] () {  // producer
-            // simulate long running operation
-            {
-                std::this_thread::sleep_for(2s);
-            }
+        std::thread producer([&] () {
+            std::this_thread::sleep_for(1s);
 
-            // produce
             {
-                std::unique_lock lock(cv_mutex);
+                std::unique_lock lock(data_mutex);
                 data = 42;
             }
 
-            // print message
             {
                 std::lock_guard l(io_mutex);
-                std::cout << "produced " << data << std::endl;
+                std::cout << "produced: " << data << std::endl;
             }
 
-            cv.notify_one();
+            data_cv.notify_one();
         });
 
-        std::thread c([&] () {  // consumer
-            // wait for notification
+        std::thread consumer([&] () {
             {
-                std::unique_lock lock(cv_mutex);
-                cv.wait(lock);
+                std::unique_lock lock(data_mutex);
+                data_cv.wait(lock);
             }
 
-            // print message
             {
                 std::lock_guard lock(io_mutex);
-                std::cout << "consumed " << data << std::endl;
+                std::cout << "consumed: " << data << std::endl;
             }
         });
 
-        p.join();
-        c.join();
+        producer.join();
+        consumer.join();
 
         std::cout << std::endl;
     }
@@ -175,17 +128,7 @@ void execute()
         }
 
         // notify the logger to finish and wait for it
-        done = true;
-        consumer_thread.join();
-        std::cout << std::endl;
-    }
-
-    // use condition_variable_any::wait with predicate
-    {
-        std::thread producer_thread (cargo_producer, 10);
-        std::thread consumer_thread (cargo_consumer, 10);
-
-        producer_thread.join();
+        all_done = true;
         consumer_thread.join();
     }
 }
