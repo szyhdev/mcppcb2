@@ -1,14 +1,10 @@
 #pragma once
 
-#include <iostream>
-#include <algorithm>
+#include "recipe_08_common.h"
+
 #include <atomic>
-#include <cassert>
 #include <future>
-#include <mutex>
 #include <random>
-#include <thread>
-#include <vector>
 
 namespace recipe_08_08
 {
@@ -35,20 +31,20 @@ void do_count(int &c)
 }
 #endif
 
-std::atomic<int> int_value(0);
-std::mutex int_value_mutex;
+std::atomic<int> int_value { 0 };
+std::mutex io_mutex;
 
 void set_int_value(int x)
 {
     int_value.store(x, std::memory_order_relaxed);      // set value atomically
 
     {
-        std::lock_guard<std::mutex> lock(int_value_mutex);
-        std::cout << "int_value stored: " << x << std::endl;
+        std::lock_guard<std::mutex> lock(io_mutex);
+        std::cout << "int value stored: " << x << std::endl;
     }
 }
 
-void print_int_value()
+void get_int_value()
 {
     int x;
     do {
@@ -56,8 +52,8 @@ void print_int_value()
     } while (x == 0);
 
     {
-        std::lock_guard<std::mutex> lock(int_value_mutex);
-        std::cout << "int_value loaded: " << x << std::endl;
+        std::lock_guard<std::mutex> lock(io_mutex);
+        std::cout << "int value loaded: " << x << std::endl;
     }
 }
 
@@ -66,7 +62,7 @@ std::atomic<bool> winner(false);
 
 void summation(int id)
 {
-    while (!ready) {
+    while (!ready.load()) {
     }
 
     long total = 0;
@@ -77,7 +73,7 @@ void summation(int id)
     if (!winner.exchange(true)) {
         std::cout << "thread " << id << " won: " << total << std::endl;
     }
-};
+}
 
 std::vector<int> generate_random()
 {
@@ -139,9 +135,9 @@ void execute()
 #ifdef HAS_ATOMIC_REF
     // use std::atomic_ref to apply atomic operations to a referenced object
     {
-        int c = 0;
-        do_count(c);
-        std::cout << c << std::endl;
+        int counter = 0;
+        do_count(counter);
+        std::cout << counter << std::endl;
     }
 #endif
 
@@ -153,11 +149,11 @@ void execute()
         std::vector<std::thread> threads;
         for (int i = 0; i < 10; ++i) {
             threads.emplace_back([&] () {
-                while (lock.test_and_set(std::memory_order_acquire));
                 for (int i = 0; i < 10; ++i) {
+                    while (lock.test_and_set(std::memory_order_acquire));
                     ++counter;
+                    lock.clear(std::memory_order_release);
                 }
-                lock.clear(std::memory_order_release);
             });
         }
 
@@ -166,12 +162,13 @@ void execute()
         }
 
         std::cout << counter << std::endl;
+        std::cout << std::endl;
     }
 
     // use atomic type's member functions: load, store and exchange
     {
         // load and store
-        std::thread t1(print_int_value);
+        std::thread t1(get_int_value);
         std::thread t2(set_int_value, 123);
         t1.join();
         t2.join();
@@ -185,6 +182,7 @@ void execute()
         for (auto& t : threads) {
             t.join();
         }
+        std::cout << std::endl;
     }
 
     // use atomic type's member functions: fetch_add and fetch_sub
@@ -192,11 +190,11 @@ void execute()
         std::atomic<int> sum { 0 };
         std::vector<int> numbers = generate_random();
 
-        auto start_expected = std::chrono::high_resolution_clock::now();
-        auto sum_expected = std::accumulate(std::begin(numbers), std::end(numbers), 0);
-        auto end_expected = std::chrono::high_resolution_clock::now();
+        // auto start_expected = std::chrono::high_resolution_clock::now();
+        // auto sum_expected = std::accumulate(std::begin(numbers), std::end(numbers), 0);
+        // auto end_expected = std::chrono::high_resolution_clock::now();
 
-        auto start = std::chrono::high_resolution_clock::now();
+        // auto start = std::chrono::high_resolution_clock::now();
         size_t size = numbers.size();
         std::vector<std::thread> threads;
         for (int i = 0; i < 10; ++i) {
@@ -211,12 +209,14 @@ void execute()
         for (auto &t : threads) {
             t.join();
         }
-        auto end = std::chrono::high_resolution_clock::now();
+        // auto end = std::chrono::high_resolution_clock::now();
 
-        std::cout << sum_expected << ": " << (end_expected - start_expected).count() <<
-                "ns" << std::endl;
-        std::cout << sum << ": " << (end - start).count() <<
-                "ns" << std::endl;
+        // std::cout << sum_expected << ": " << (end_expected - start_expected).count() <<
+        //         "ns" << std::endl;
+        // std::cout << sum << ": " << (end - start).count() <<
+        //         "ns" << std::endl;
+        std::cout << "sum = " << sum << std::endl;
+        std::cout << std::endl;
     }
 
     // implement a class to represent an atomic counter
@@ -225,7 +225,7 @@ void execute()
 
         std::vector<std::thread> threads;
         for (int i = 0; i < 10; ++i) {
-            threads.emplace_back([&counter]() {
+            threads.emplace_back([&counter] () {
                 for (int i = 0; i < 10; ++i) {
                     counter.increment();
                 }
@@ -237,6 +237,7 @@ void execute()
         }
 
         std::cout << counter.get() << std::endl;
+        std::cout << std::endl;
     }
 
     // an efficient thread-synchronization mechanism provided in C++20
@@ -249,7 +250,6 @@ void execute()
         for (std::future<void> &task_future : task_futures) {
             task_future = std::async([&] () {
                 std::this_thread::sleep_for(50ms);
-
                 ++completed;
                 --uncompleted;
                 if (uncompleted.load() == 0) {
