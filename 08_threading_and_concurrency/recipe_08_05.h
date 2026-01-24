@@ -10,11 +10,11 @@ namespace recipe_08_05
 
 using namespace std::chrono_literals;
 
-std::condition_variable buffer_cv;
 std::mutex buffer_mutex;
+std::mutex buffer_io_mutex;
+std::condition_variable buffer_cv;
 std::queue<int> buffer;
 
-std::mutex print_mutex;
 bool all_done;
 
 void producer(int const id, std::mt19937 &generator,
@@ -32,7 +32,7 @@ void producer(int const id, std::mt19937 &generator,
         }
 
         {
-            std::unique_lock<std::mutex> print_lock(print_mutex);
+            std::unique_lock<std::mutex> buffer_io_lock(buffer_io_mutex);
             std::cout << "produced: " << value << std::endl;
         }
 
@@ -51,7 +51,7 @@ void consumer()
                 });
 
         while (!all_done && !buffer.empty()) {
-            std::unique_lock<std::mutex> print_lock(print_mutex);
+            std::unique_lock<std::mutex> buffer_io_lock(buffer_io_mutex);
             std::cout << "consumed: " << buffer.front() << std::endl;
             buffer.pop();
         }
@@ -62,23 +62,21 @@ void execute()
 {
     // synchronize threads with notifications on condition variables
     {
-        std::condition_variable data_cv;
-
         std::mutex data_mutex;
-        std::mutex io_mutex;
-
+        std::mutex data_io_mutex;
+        std::condition_variable data_cv;
         int data = 0;
 
         std::thread producer([&] () {
             std::this_thread::sleep_for(1s);
 
             {
-                std::unique_lock lock(data_mutex);
+                std::unique_lock data_lock(data_mutex);
                 data = 42;
             }
 
             {
-                std::lock_guard l(io_mutex);
+                std::lock_guard data_io_lock(data_io_mutex);
                 std::cout << "produced: " << data << std::endl;
             }
 
@@ -87,12 +85,12 @@ void execute()
 
         std::thread consumer([&] () {
             {
-                std::unique_lock lock(data_mutex);
-                data_cv.wait(lock);
+                std::unique_lock data_lock(data_mutex);
+                data_cv.wait(data_lock);
             }
 
             {
-                std::lock_guard lock(io_mutex);
+                std::lock_guard data_io_lock(data_io_mutex);
                 std::cout << "consumed: " << data << std::endl;
             }
         });
@@ -122,12 +120,12 @@ void execute()
                     std::ref(sleep_dist), std::ref(data_dist));
         }
 
-        // wait for the worker threads to finish
+        // wait for producer threads to finish
         for (auto &t : producer_threads) {
             t.join();
         }
 
-        // notify the logger to finish and wait for it
+        // notify consumer thread to finish and wait for it
         all_done = true;
         consumer_thread.join();
     }
