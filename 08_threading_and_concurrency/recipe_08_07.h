@@ -67,8 +67,7 @@ void execute()
         std::cout << std::endl;
     }
 
-    // specify a duration after which the call ends and returns even if
-    // the shared state is not yet available through the future
+    // create a polling routine and display a status message
     {
         auto f = std::async(std::launch::async, do_something);
 
