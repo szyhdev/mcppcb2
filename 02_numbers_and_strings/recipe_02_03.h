@@ -35,6 +35,7 @@ void generate_and_print(std::function<int(void)> gen,
     for (auto kvp : data) {
         std::cout << std::fixed << std::setprecision(1) << std::setw(3) << kvp.first;
     }
+    std::cout << std::defaultfloat << std::setprecision(6) << std::setw(0);
     std::cout << std::endl;
 }
 
