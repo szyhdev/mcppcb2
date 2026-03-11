@@ -14,7 +14,7 @@ void thread_func1(int i)
 {
     while (i-- > 0) {
         std::this_thread::sleep_for(200ms);
-        std::cout << i << ' ';
+        std::cout << i << " ";
     }
     std::cout << std::endl;
 }
@@ -76,15 +76,15 @@ void execute()
     {
         int a = 0;
 
-        std::stop_source src;
-        std::stop_token token = src.get_token();
-        std::stop_callback cb(token, [] {
+        std::stop_source ss;
+        std::stop_token st = ss.get_token();
+        std::stop_callback cb(st, [] {
             std::cout << "callback: done" << std::endl;
         });
-        std::jthread t(thread_func2, token, std::ref(a));
+        std::jthread t(thread_func2, st, std::ref(a));
 
         std::this_thread::sleep_for(1s);
-        src.request_stop();
+        ss.request_stop();
 
         std::cout << "thread_main:  " << a << std::endl;  // prints 4
     }
