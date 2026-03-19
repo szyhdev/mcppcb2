@@ -1,33 +1,50 @@
 #pragma once
 
-#include <iostream>
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <chrono>
+#include <cmath>
+#include <execution>
 #include <functional>
+#include <future>
+#include <iostream>
+#include <list>
+#include <map>
+#include <numeric>
 #include <queue>
+#include <set>
 #include <sstream>
+#include <thread>
+#include <vector>
 
 namespace recipe_common
 {
+
+std::ostream &operator <<(std::ostream &os, const std::pair<std::string, int> &e)
+{
+    os << "(" << e.first << ", " << e.second << ")";
+    return os;
+}
 
 template <typename T>
 void print_collection(const T &coll, const std::string &prefix = "")
 {
     std::cout << prefix;
     for (auto &e : coll) {
-        std::cout << e << ' ';
+        std::cout << e << " ";
     }
     std::cout << std::endl;
 }
 
 template <typename T>
-void print_array(T const *const arr, size_t const size,
-        const std::string &prefix = "")
+void print_queue(const std::queue<T> &q, const std::string &prefix = "")
 {
     std::cout << prefix;
-    for (size_t i = 0; i < size; ++i) {
-        std::cout << arr[i] << ' ';
+    std::queue<int> temp(q);
+    while (!temp.empty()) {
+        std::cout << temp.front() << " ";
+        temp.pop();
     }
     std::cout << std::endl;
 }

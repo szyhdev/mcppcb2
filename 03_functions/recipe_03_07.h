@@ -1,21 +1,13 @@
 #pragma once
 
 #include "recipe_03_common.h"
-#include "funclib.h"
-
-#include <array>
-#include <cmath>
-#include <list>
-#include <map>
-#include <queue>
-#include <vector>
 
 namespace recipe_03_07
 {
 
 using namespace std::string_literals;
 
-template <class T = double>
+template <typename T = double>
 struct fround
 {
     typename std::enable_if_t<std::is_floating_point_v<T>, T>
@@ -31,103 +23,114 @@ void execute()
         { "one", 1 }, { "two", 2 }, { "three", 3 }
     };
 
-    // apply map function to all kinds of containers
+    // apply map higher-order functions to all kinds of containers
     {
-        auto v = funclib::mapf([] (int const i) {
+        // retain absolute values from a vector
+        auto v = recipe_03_common::mapf([] (int const i) {
                     return std::abs(i);
                 }, vnums);
         recipe_common::print_collection(v, "v: ");
 
+        // square the numerical values of a list
         auto lnums = std::list<int> { 1, 2, 3, 4, 5 };
-        auto l = funclib::mapf([] (int const i) {
+        auto l = recipe_03_common::mapf([] (int const i) {
                     return i * i;
                 }, lnums);
         recipe_common::print_collection(l, "l: ");
 
+        // rounded amounts of floating points
         auto amounts = std::array<double, 5> { 10.42, 2.50, 100.0, 23.75, 12.99 };
-        auto a = funclib::mapf(fround<>(), amounts);
+        auto a = recipe_03_common::mapf(fround<>(), amounts);
         recipe_common::print_collection(a, "a: ");
 
-        auto m = funclib::mapf([] (std::pair<std::string, int> const kvp) {
-                    return std::make_pair(funclib::mapf(toupper, kvp.first), kvp.second);
+        // uppercase the string keys of a map of words
+        auto m = recipe_03_common::mapf([] (std::pair<std::string, int> const kvp) {
+                    return std::make_pair(recipe_03_common::mapf(toupper, kvp.first), kvp.second);
                 }, words);
         recipe_common::print_collection(m, "m: ");
 
+        // find the opposite numbers of a set
+        auto snums = std::set<int>(vnums.begin(), vnums.end());
+        auto s = recipe_03_common::mapf([] (int const i) {
+                    return -i;
+                }, snums);
+        recipe_common::print_collection(s, "s: ");
+
+        // normalize values from a queue of priorities
         auto priorities = std::queue<int>();
         priorities.push(10);
         priorities.push(20);
-        priorities.push(30);
         priorities.push(40);
+        priorities.push(30);
         priorities.push(50);
-        auto p = funclib::mapf([] (int const i) {
+        auto p = recipe_03_common::mapf([] (int const i) {
                     return (i > 30) ? 2 : 1;
                 }, priorities);
         recipe_common::print_queue(p, "p: ");
         std::cout << std::endl;
     }
 
-    // apply fold function to all kinds of containers
+    // apply fold higher-order functions to all kinds of containers
     {
-        auto s1 = funclib::foldl([] (const int s, const int n) {
+        // add the values of a vector of integers
+        auto s1 = recipe_03_common::foldl([] (const int s, const int n) {
                     return s + n;
                 }, vnums, 0);
         std::cout << s1 << std::endl;
-
-        auto s2 = funclib::foldl(std::plus<>(), vnums, 0);
+        auto s2 = recipe_03_common::foldl(std::plus<>(), vnums, 0);
         std::cout << s2 << std::endl;
-
-        auto s3 = funclib::foldr([](const int s, const int n) {
+        auto s3 = recipe_03_common::foldr([](const int s, const int n) {
                     return s + n;
                 }, vnums, 0);
         std::cout << s3 << std::endl;
-
-        auto s4 = funclib::foldr(std::plus<>(), vnums, 0);
+        auto s4 = recipe_03_common::foldr(std::plus<>(), vnums, 0);
         std::cout << s4 << std::endl;
 
+        // concatenate strings from a vector into a single string
         auto texts = std::vector<std::string> {
             "hello"s, " "s, "world"s, "!"s
         };
-        auto txt1 = funclib::foldl([] (std::string const &s, std::string const &n) {
+        auto txt1 = recipe_03_common::foldl([] (std::string const &s, std::string const &n) {
                     return s + n;
                 }, texts, ""s);
         std::cout << txt1 << std::endl;
-        auto txt2 = funclib::foldr([] (std::string const &s, std::string const &n) {
+        auto txt2 = recipe_03_common::foldr([] (std::string const &s, std::string const &n) {
                     return s + n;
                 }, texts, ""s);
         std::cout << txt2 << std::endl;
 
-        char chars[] = { 'c', 'i', 'v', 'i', 'c' };
-        auto str1 = funclib::foldl(std::plus<>(), chars, ""s);
+        // concatenate an array of characters into a string
+        char chars[] = { 'l', 'i', 'n', 'u', 'x' };
+        auto str1 = recipe_03_common::foldl(std::plus<>(), chars, ""s);
         std::cout << str1 << std::endl;
-        auto str2 = funclib::foldr(std::plus<>(), chars, ""s);
+        auto str2 = recipe_03_common::foldr(std::plus<>(), chars, ""s);
         std::cout << str2 << std::endl;
 
-        auto count = funclib::foldl([] (int const s, std::pair<std::string, int> const kvp) {
+        // count the number of words in text based on std::map<std::string, int>
+        auto count = recipe_03_common::foldl([] (int const s,
+                std::pair<std::string, int> const kvp) {
                     return s + kvp.second;
                 }, words, 0);
         std::cout << count << std::endl;
 
+        // add the values of a queue of integers
         auto q = std::queue<int>();
         q.push(1);
         q.push(2);
         q.push(3);
         q.push(4);
         q.push(5);
-        auto sum1 = funclib::foldl(std::plus<>(), q, 0);
-        std::cout << sum1 << std::endl;
-        auto sum2 = funclib::foldr(std::plus<>(), q, 0);
-        std::cout << sum2 << std::endl;
+        auto sum = recipe_03_common::foldl(std::plus<>(), q, 0);
+        std::cout << sum << std::endl;
         std::cout << std::endl;
     }
 
     // pipeline map functions and fold functions
     {
-        auto vnums = std::vector<int> { 0, 2, -3, 5, -1, 6, 8, -4, 9 };
-        auto s = funclib::foldl(std::plus<>(),
-                funclib::mapf([] (int const i) {
+        auto s = recipe_03_common::foldl(std::plus<>(),
+                recipe_03_common::mapf([] (int const i) {
                             return i * i;
-                        },
-                        funclib::mapf([] (int const i) {
+                        }, recipe_03_common::mapf([] (int const i) {
                             return std::abs(i);
                         }, vnums)),
                 0);
@@ -137,15 +140,15 @@ void execute()
 
     // implement the fold function as a variadic function template
     {
-        auto s1 = funclib::foldl_variadic(std::plus<>(), 1, 2, 3, 4, 5);
+        auto s1 = recipe_03_common::foldl_v(std::plus<>(), 1, 2, 3, 4, 5);
         std::cout << s1 << std::endl;
-        auto s2 = funclib::foldl_variadic(std::plus<>(), "hello"s, ' ', "world"s, '!');
+        auto s2 = recipe_03_common::foldl_v(std::plus<>(), "hello"s, ' ', "world"s, '!');
         std::cout << s2 << std::endl;
-        // auto s3 = funclib::foldl_variadic(std::plus<>(), 1);  // error
-        auto s4 = funclib::foldr_variadic(std::plus<>(), 1, 2, 3, 4, 5);
+        auto s3 = recipe_03_common::foldr_v(std::plus<>(), 1, 2, 3, 4, 5);
+        std::cout << s3 << std::endl;
+        auto s4 = recipe_03_common::foldr_v(std::plus<>(), "hello"s, ' ', "world"s, '!');
         std::cout << s4 << std::endl;
-        auto s5 = funclib::foldr_variadic(std::plus<>(), "hello"s, ' ', "world"s, '!');
-        std::cout << s5 << std::endl;
+        // auto s5 = recipe_03_common::foldl_v(std::plus<>(), 1);  // error
     }
 }
 
