@@ -104,4 +104,20 @@ auto foldr_v(F &&f, T head, Ts ...rest)
     return f(foldr_v(std::forward<F>(f), rest...), head);
 }
 
+template <typename F, typename G>
+auto compose(F &&f, G &&g)
+{
+    return [=] (auto x) {
+        return f(g(x));
+    };
+}
+
+template <typename F, typename ...R>
+auto compose(F &&f, R &&...rest)
+{
+    return [=] (auto x) {
+        return f(compose(rest...)(x));
+    };
+}
+
 }
