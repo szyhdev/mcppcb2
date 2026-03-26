@@ -2,10 +2,6 @@
 
 #include "recipe_08_common.h"
 
-#include <algorithm>
-#include <numeric>
-#include <thread>
-
 namespace recipe_08_09
 {
 
@@ -86,7 +82,7 @@ auto parallel_fold(Iter begin, Iter end, R init, F op)
 
 void execute()
 {
-    // run both the sequential and parallel versions of map and fold
+    // run sequential version and parallel thread version of map and fold
     // on vectors of different sizes and print the execution time
     {
         std::vector<int> sizes {
@@ -119,7 +115,7 @@ void execute()
                 s1 = std::accumulate(std::begin(v1), std::end(v1), 0LL, std::plus<>());
             });
 
-            // parallel version
+            // parallel thread version
             auto v2 = v;
             auto s2 = 0LL;
             auto tpm = recipe_common::perf_timer<>::duration([&] () {
