@@ -10,3 +10,8 @@ inline void print_time(std::string const &prefix = "")
 
     std::cout << prefix << std::put_time(ltime, "%c") << std::endl;
 }
+
+unsigned int get_num_of_threads()
+{
+    return std::thread::hardware_concurrency();
+}

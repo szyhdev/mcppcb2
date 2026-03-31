@@ -8,6 +8,7 @@
 #include "recipe_08_07.h"
 #include "recipe_08_08.h"
 #include "recipe_08_09.h"
+#include "recipe_08_10.h"
 #include "recipe_08_12.h"
 #include "recipe_08_13.h"
 
@@ -47,6 +48,10 @@ int main()
 
     std::cout << "[recipe_08_09]" << std::endl << std::endl;
     recipe_08_09::execute();
+    std::cout << std::endl;
+
+    std::cout << "[recipe_08_10]" << std::endl << std::endl;
+    recipe_08_10::execute();
     std::cout << std::endl;
 
     std::cout << "[recipe_08_12]" << std::endl << std::endl;

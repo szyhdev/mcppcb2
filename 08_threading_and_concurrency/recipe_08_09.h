@@ -5,11 +5,6 @@
 namespace recipe_08_09
 {
 
-unsigned int get_num_of_threads()
-{
-    return std::thread::hardware_concurrency();
-}
-
 template <typename Iter, typename F>
 void parallel_map(Iter begin, Iter end, F f)
 {
