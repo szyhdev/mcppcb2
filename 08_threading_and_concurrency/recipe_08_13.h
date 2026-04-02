@@ -2,13 +2,6 @@
 
 #include "recipe_08_common.h"
 
-#ifdef HAS_LATCHES_BARRIERS
-#include <barrier>
-#include <latch>
-#include <semaphore>
-#include <thread>
-#endif
-
 namespace recipe_08_13
 {
 

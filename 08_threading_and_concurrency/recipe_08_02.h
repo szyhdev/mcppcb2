@@ -1,11 +1,6 @@
-
 #pragma once
 
 #include "recipe_08_common.h"
-
-#include <mutex>
-#include <thread>
-#include <vector>
 
 namespace recipe_08_02
 {

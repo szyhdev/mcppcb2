@@ -1,9 +1,6 @@
 #pragma once
 
-#include <iostream>
-#include <exception>
-#include <thread>
-#include <vector>
+#include "recipe_08_common.h"
 
 namespace recipe_08_04
 {

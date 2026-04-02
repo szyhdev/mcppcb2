@@ -2,8 +2,6 @@
 
 #include "recipe_08_common.h"
 
-#include <thread>
-
 namespace recipe_08_12
 {
 

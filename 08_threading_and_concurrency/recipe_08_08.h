@@ -2,10 +2,6 @@
 
 #include "recipe_08_common.h"
 
-#include <atomic>
-#include <future>
-#include <random>
-
 namespace recipe_08_08
 {
 

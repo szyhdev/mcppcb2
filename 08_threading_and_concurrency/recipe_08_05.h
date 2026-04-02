@@ -2,9 +2,6 @@
 
 #include "recipe_08_common.h"
 
-#include <condition_variable>
-#include <random>
-
 namespace recipe_08_05
 {
 

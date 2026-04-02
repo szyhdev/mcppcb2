@@ -2,9 +2,6 @@
 
 #include "recipe_08_common.h"
 
-#include <mutex>
-#include <thread>
-
 namespace recipe_08_03
 {
 
