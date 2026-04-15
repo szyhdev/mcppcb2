@@ -5,7 +5,7 @@
 namespace recipe_03_09
 {
 
-int add(int const a, int const b)
+int add(int a, int b)
 {
     return a + b;
 }
@@ -14,7 +14,7 @@ struct foo
 {
     int x = 0;
 
-    void increment_by(int const n) {
+    void increment(int n) {
         x += n;
     }
 };
@@ -35,96 +35,93 @@ auto apply(F &&f, T &&t)
 
 void execute()
 {
-    // free functions
+    auto ladd = [] (auto a, auto b) {
+        return a + b;
+    };
+
+    // all types of callable objects
     {
-        auto a1 = add(1, 2);
-        std::cout << a1 << std::endl;
+        // function
+        auto s1 = add(2, 3);
+        std::cout << s1 << std::endl;
 
-        auto a2 = std::invoke(add, 1, 2);
-        std::cout << a2 << std::endl;
-        std::cout << std::endl;
-    }
+        // function pointer
+        int (*fp1)(int, int) = &add;
+        auto s2 = fp1(2, 3);
+        std::cout << s2 << std::endl;
 
-    // free functions through pointer to function
-    {
-        int (*fadd1)(int const, int const) = &add;
-        auto a1 = fadd1(1, 2);
-        std::cout << a1 << std::endl;
+        auto fp2 = &add;
+        auto s3 = fp2(2, 3);
+        std::cout << s3 << std::endl;
 
-        auto fadd2 = &add;
-        auto a2 = fadd2(1, 2);
-        std::cout << a2 << std::endl;
-
-        auto a3 = std::invoke(&add, 1, 2);
-        std::cout << a3 << std::endl;
-
-        auto a4 = std::invoke(fadd1, 1, 2);
-        std::cout << a4 << std::endl;
-
-        std::cout << std::endl;
-    }
-
-    // member functions through pointer to member function
-    {
+        // member function pointer
         foo f;
-        f.increment_by(3);
+        void (foo::*mfp1)(int) = &foo::increment;
+        (f.*mfp1)(3);
         std::cout << f.x << std::endl;
 
-        void (foo::*finc1)(int const) = &foo::increment_by;
-        (f.*finc1)(3);
+        auto mfp2 = &foo::increment;
+        (f.*mfp2)(3);
         std::cout << f.x << std::endl;
 
-        auto finc2 = &foo::increment_by;
-        (f.*finc2)(3);
-        std::cout << f.x << std::endl;
+        // data member
+        auto x = f.x;
+        std::cout << x << std::endl;
 
-        std::invoke(&foo::increment_by, f, 3);
-        std::cout << f.x << std::endl;
+        // function objects
+        auto s4 = std::plus<>()(f.x, 3);
+        std::cout << s4 << std::endl;
 
-        std::invoke(finc1, f, 3);
-        std::cout << f.x << std::endl;
+        // lambda expression
+        auto s5 = ladd(2, 3);
+        std::cout << s5 << std::endl;
         std::cout << std::endl;
     }
 
-    // data members
+    // use std::invoke to take callable object as first argument and
+    // a variable list of arguments that are passed to the call
     {
+        // function
+        auto s1 = std::invoke(add, 2, 3);
+        std::cout << s1 << std::endl;
+
+        // function pointer
+        int (*fp1)(int, int) = &add;
+        auto s2 = std::invoke(fp1, 2, 3);
+        std::cout << s2 << std::endl;
+
+        auto fp2 = &add;
+        auto s3 = std::invoke(fp2, 2, 3);
+        std::cout << s3 << std::endl;
+
+        // member function pointer
         foo f;
-        f.increment_by(3);
+        void (foo::*mfp1)(int) = &foo::increment;
+        std::invoke(mfp1, f, 3);
         std::cout << f.x << std::endl;
 
+        auto mfp2 = &foo::increment;
+        std::invoke(mfp2, f, 3);
+        std::cout << f.x << std::endl;
+
+        // data member
         auto x = std::invoke(&foo::x, f);
         std::cout << x << std::endl;
+
+        // function objects
+        auto s4 = std::invoke(std::plus<>(), std::invoke(&foo::x, f), 3);
+        std::cout << s4 << std::endl;
+
+        // lambda expression
+        auto s5 = std::invoke(ladd, 2, 3);
+        std::cout << s5 << std::endl;
         std::cout << std::endl;
     }
 
-    // function objects
+    // a possible implementation of std::apply
     {
-        foo f;
-        auto x1 = std::plus<>()(std::invoke(&foo::x, f), 3);
-        std::cout << x1 << std::endl;
-
-        auto x2 = std::invoke(std::plus<>(), std::invoke(&foo::x, f), 3);
-        std::cout << x2 << std::endl;
-        std::cout << std::endl;
-    }
-
-    // lambda expression
-    {
-        auto ladd = [] (auto a, auto b) {
-            return a + b;
-        };
-        auto a1 = ladd(1, 2);
-        std::cout << a1 << std::endl;
-
-        auto a2 = std::invoke(ladd, 1, 2);
-        std::cout << a2 << std::endl;
-        std::cout << std::endl;
-    }
-
-    // a possible implementation for std::apply
-    {
-        auto a = recipe_03_09::apply(add, std::make_tuple(1, 2));
-        std::cout << a << std::endl;
+        auto s = recipe_03_09::apply(add, std::make_tuple(2, 3));
+        std::cout << s << std::endl;
     }
 }
 
