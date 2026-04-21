@@ -1,23 +1,11 @@
 #pragma once
 
-#include "recipe_03_common.h"
+#include "recipe_03_09_common.h"
 
 namespace recipe_03_09
 {
 
-int add(int a, int b)
-{
-    return a + b;
-}
-
-struct foo
-{
-    int x = 0;
-
-    void increment(int n) {
-        x += n;
-    }
-};
+using namespace recipe_03_09_common;
 
 template <typename F, typename T, std::size_t ...I>
 auto apply(F &&f, T &&t, std::index_sequence<I...>)
