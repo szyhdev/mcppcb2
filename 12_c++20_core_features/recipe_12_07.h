@@ -5,40 +5,20 @@
 namespace recipe_12_07
 {
 
-// #define SHOW_DEBUG_INFO
-
-template <typename T>
-void print_debug_info(T value)
-{
-#ifdef SHOW_DEBUG_INFO
-    std::cout << value;
-    std::cout << std::endl;
-#endif
-}
-
-template <typename T, typename ...Ts>
-void print_debug_info(T head, Ts... rest)
-{
-#ifdef SHOW_DEBUG_INFO
-    std::cout << head;
-    print_debug_info(rest...);
-#endif
-}
-
 struct promise_base
 {
     auto initial_suspend() noexcept {
-        print_debug_info("promise_base::initial_suspend");
+        recipe_12_common::print_debug_info("promise_base::initial_suspend");
         return std::suspend_always {};
     }
 
     auto final_suspend() noexcept {
-        print_debug_info("promise_base::final_suspend");
+        recipe_12_common::print_debug_info("promise_base::final_suspend");
         return std::suspend_always {};
     }
 
     void unhandled_exception() {
-        print_debug_info("promise_base::unhandled_exception");
+        recipe_12_common::print_debug_info("promise_base::unhandled_exception");
         std::terminate();
     }
 };
@@ -48,18 +28,18 @@ struct promise final : public promise_base
 {
     auto get_return_object() {
         auto handle = std::coroutine_handle<promise<T>>::from_promise(*this);
-        print_debug_info("promise<T>::get_return_object: ", &handle.promise());
+        recipe_12_common::print_debug_info("promise<T>::get_return_object: ", &handle.promise());
         return handle;
     }
 
     template <typename V, typename = std::enable_if_t<std::is_convertible_v<V &&, T>>>
     void return_value(V &&value) noexcept(std::is_nothrow_constructible_v<T, V &&>) {
-        print_debug_info("promise<T>::return_value");
+        recipe_12_common::print_debug_info("promise<T>::return_value");
         value_ = value;
     }
 
     T get_value() const noexcept {
-        print_debug_info("promise<T>::get_value");
+        recipe_12_common::print_debug_info("promise<T>::get_value");
         return value_;
     }
 
@@ -72,12 +52,12 @@ struct promise<void> final : public promise_base
 {
     auto get_return_object() {
         auto handle = std::coroutine_handle<promise<void>>::from_promise(*this);
-        print_debug_info("promise<void>::get_return_object: ", &handle.promise());
+        recipe_12_common::print_debug_info("promise<void>::get_return_object: ", &handle.promise());
         return handle;
     }
 
     void return_void() noexcept {
-        print_debug_info("promise<void>::return_void");
+        recipe_12_common::print_debug_info("promise<void>::return_void");
     }
 };
 
@@ -86,17 +66,17 @@ struct promise<T &> final : public promise_base
 {
     auto get_return_object() {
         auto handle = std::coroutine_handle<promise<T &>>::from_promise(*this);
-        print_debug_info("promise<T &>::get_return_object: ", &handle.promise());
+        recipe_12_common::print_debug_info("promise<T &>::get_return_object: ", &handle.promise());
         return handle;
     }
 
     void return_value(T &value) noexcept {
-        print_debug_info("promise<T &>::return_value");
+        recipe_12_common::print_debug_info("promise<T &>::return_value");
         value_ = std::addressof(value);
     }
 
     T &get_value() const noexcept {
-        print_debug_info("promise<T &>::get_value");
+        recipe_12_common::print_debug_info("promise<T &>::get_value");
         return *value_;
     }
 
@@ -111,21 +91,21 @@ struct task_awaiter
 
     task_awaiter(std::coroutine_handle<promise_type> handle) noexcept
             : handle_(handle) {
-        print_debug_info("task_awaiter::task_awaiter");
+        recipe_12_common::print_debug_info("task_awaiter::task_awaiter");
     }
 
     bool await_ready() const noexcept {
-        print_debug_info("task_awaiter::await_ready");
+        recipe_12_common::print_debug_info("task_awaiter::await_ready");
         return !handle_ || handle_.done();
     }
 
     void await_suspend([[maybe_unused]] std::coroutine_handle<> continuation) noexcept {
-        print_debug_info("task_awaiter::await_suspend");
+        recipe_12_common::print_debug_info("task_awaiter::await_suspend");
         handle_.resume();
     }
 
     decltype(auto) await_resume() {
-        print_debug_info("task_awaiter::await_resume");
+        recipe_12_common::print_debug_info("task_awaiter::await_resume");
         if (!handle_) {
             throw std::runtime_error { "broken promise" };
         }
@@ -142,23 +122,23 @@ struct task
     using promise_type = promise<T>;
 
     task(std::coroutine_handle<promise_type> handle) : handle_(handle) {
-        print_debug_info("task::task: ", &handle_.promise());
+        recipe_12_common::print_debug_info("task::task: ", &handle_.promise());
     }
 
     ~task() {
-        print_debug_info("task::~task: ", &handle_.promise());
+        recipe_12_common::print_debug_info("task::~task: ", &handle_.promise());
         if (handle_) {
             handle_.destroy();
         }
     }
 
     task(task &&t) noexcept : handle_(t.handle_) {
-        print_debug_info("task::task(task &&)");
+        recipe_12_common::print_debug_info("task::task(task &&)");
         t.handle_ = nullptr;
     }
 
     task &operator =(task &&other) noexcept {
-        print_debug_info("task::operator =");
+        recipe_12_common::print_debug_info("task::operator =");
         if (std::addressof(other) != this) {
             if (handle_) {
                 handle_.destroy();
@@ -173,37 +153,29 @@ struct task
     task &operator =(task const &) = delete;
 
     bool is_done() noexcept {
-        print_debug_info("task::is_done: ", &handle_.promise());
+        recipe_12_common::print_debug_info("task::is_done: ", &handle_.promise());
         return !handle_ || handle_.done();
     }
 
     void resume() noexcept {
-        print_debug_info("task::resume: ", &handle_.promise());
+        recipe_12_common::print_debug_info("task::resume: ", &handle_.promise());
         if (handle_) {
             handle_.resume();
         }
     }
 
     T value() const noexcept {
-        print_debug_info("task::value");
+        recipe_12_common::print_debug_info("task::value");
         return handle_.promise().get_value();
     }
 
     auto operator co_await() const & noexcept {
-        print_debug_info("task::operator co_await");
+        recipe_12_common::print_debug_info("task::operator co_await");
         return task_awaiter<T> { handle_ };
     }
 
 private:
     std::coroutine_handle<promise_type> handle_ = nullptr;
-};
-
-template <typename T>
-void execute(T &&t)
-{
-    while (!t.is_done()) {
-        t.resume();
-    }
 };
 
 task<void> say_hello()
@@ -248,14 +220,14 @@ void execute()
 {
     // coroutine without return value
     {
-        execute(say_hello());
+        recipe_12_common::execute(say_hello());
         std::cout << std::endl;
     }
 
     // coroutine with return value
     {
         auto t = get_answer();
-        execute(t);
+        recipe_12_common::execute(t);
         std::cout << t.value() << std::endl;
     }
     std::cout << std::endl;
@@ -264,7 +236,7 @@ void execute()
     {
         int a = 42;
         auto t = get_answer(a);
-        execute(t);
+        recipe_12_common::execute(t);
         int &b = t.value();
         assert(&a == &b);
         std::cout << a << std::endl;
@@ -274,13 +246,13 @@ void execute()
 
     // coroutine that calls another coroutine
     {
-        execute(print_answer());
+        recipe_12_common::execute(print_answer());
         std::cout << std::endl;
     }
 
     // coroutine that simulates concurrent url requests
     {
-        execute(get_all_urls(10));
+        recipe_12_common::execute(get_all_urls(10));
     }
 }
 
