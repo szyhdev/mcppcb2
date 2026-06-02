@@ -7,6 +7,8 @@
 #include <chrono>
 #include <cmath>
 #include <condition_variable>
+#include <coroutine>
+#include <cstddef>
 #include <execution>
 #include <functional>
 #include <future>
