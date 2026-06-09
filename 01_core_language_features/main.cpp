@@ -3,6 +3,7 @@
 #include "recipe_01_03.h"
 #include "recipe_01_04.h"
 #include "recipe_01_08.h"
+#include "recipe_01_09.h"
 
 int main()
 {
@@ -24,6 +25,10 @@ int main()
 
     std::cout << "[recipe_01_08]" << std::endl << std::endl;
     recipe_01_08::execute();
+    std::cout << std::endl;
+
+    std::cout << "[recipe_01_09]" << std::endl << std::endl;
+    recipe_01_09::execute();
     std::cout << std::endl;
 
     return 0;
