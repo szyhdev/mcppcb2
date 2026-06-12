@@ -2,29 +2,26 @@
 
 #include "../include/recipe_common.h"
 
-#include <iostream>
-
 namespace recipe_05_common
 {
 
-struct Task
+struct task
 {
     int priority;
     std::string name;
 };
 
-bool operator <(Task const &lhs, Task const &rhs) {
+bool operator <(task const &lhs, task const &rhs) {
     return lhs.priority < rhs.priority;
 }
 
-bool operator >(Task const &lhs, Task const &rhs) {
+bool operator >(task const &lhs, task const &rhs) {
     return lhs.priority > rhs.priority;
 }
 
-std::ostream &operator <<(std::ostream &os, Task const &task)
+std::ostream &operator <<(std::ostream &os, task const &t)
 {
-    os << "(" << task.priority << ", " << task.name << ") ";
-
+    os << "(" << t.priority << ", " << t.name << ") ";
     return os;
 }
 
