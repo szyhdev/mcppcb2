@@ -21,7 +21,7 @@ bool operator >(task const &lhs, task const &rhs) {
 
 std::ostream &operator <<(std::ostream &os, task const &t)
 {
-    os << "(" << t.priority << ", " << t.name << ") ";
+    os << "(" << t.priority << ", " << t.name << ")";
     return os;
 }
 
