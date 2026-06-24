@@ -2,20 +2,14 @@
 
 #include "recipe_05_common.h"
 
-#include <iostream>
-#include <algorithm>
-#include <vector>
-
 namespace recipe_05_06
 {
-
-using namespace std::string_literals;
 
 void execute()
 {
     // sort a range
     {
-        std::vector<int> v { 3, 13, 5, 8, 1, 2, 1 };
+        std::vector<int> v { 3, 13, 5, 8, 0, 1, 2, 1 };
         recipe_common::print_collection(v, "v: ");
 
         std::sort(v.begin(), v.end());
@@ -26,15 +20,15 @@ void execute()
         std::cout << std::endl;
     }
 
-    // sort a range but keeping order of equal elements
+    // sort a range but keep order of equal elements
     {
-        std::vector<recipe_05_common::Task> v {
-            { 10, "Task 1"s },
-            { 40, "Task 2"s },
-            { 25, "Task 3"s },
-            { 10, "Task 6"s },
-            { 80, "Task 5"s },
-            { 10, "Task 4"s },
+        std::vector<recipe_05_common::task> v {
+            { 10, "task1" },
+            { 40, "task2" },
+            { 25, "task3" },
+            { 10, "task6" },
+            { 80, "task5" },
+            { 10, "task4" },
         };
         recipe_common::print_collection(v, "v: ");
 
@@ -48,7 +42,7 @@ void execute()
 
     // sort a part of a range and leave the rest in an unspecified order
     {
-        std::vector<int> v { 3, 13, 5, 8, 1, 2, 1 };
+        std::vector<int> v { 3, 13, 5, 8, 0, 1, 2, 1 };
         recipe_common::print_collection(v, "v: ");
 
         std::partial_sort(v.begin(), v.begin() + 4, v.end());
@@ -62,15 +56,15 @@ void execute()
     // sort a part of a range by copying the sorted elements to a second range and
     // leave the original range unchanged
     {
-        std::vector<int> v { 3, 13, 5, 8, 1, 2, 1 };
-        std::vector<int> vc(v.size());
+        std::vector<int> v { 3, 13, 5, 8, 0, 1, 2, 1 };
         recipe_common::print_collection(v, "v: ");
 
+        std::vector<int> vc(v.size());
         std::partial_sort_copy(v.begin(), v.end(), vc.begin(), vc.end());
         recipe_common::print_collection(vc, "vc: ");
 
-        std::partial_sort_copy(v.begin(), v.end(), vc.begin(),
-                vc.end(), std::greater<>());
+        std::partial_sort_copy(v.begin(), v.end(), vc.begin(), vc.end(),
+                std::greater<>());
         recipe_common::print_collection(vc, "vc: ");
         std::cout << std::endl;
     }
@@ -79,7 +73,7 @@ void execute()
     // if the range was completely sorted, and the elements before it are all smaller and
     // the ones after it are all greater, without any guarantee that they are also ordered
     {
-        std::vector<int> v { 3, 13, 5, 8, 1, 2, 1 };
+        std::vector<int> v { 3, 13, 5, 8, 0, 1, 2, 1 };
         recipe_common::print_collection(v, "v: ");
 
         std::nth_element(v.begin(), v.begin() + 3, v.end());
@@ -92,7 +86,7 @@ void execute()
 
     // check whether a range is sorted
     {
-        std::vector<int> v { 1, 1, 2, 3, 5, 8, 13 };
+        std::vector<int> v { 0, 1, 1, 2, 3, 5, 8, 13 };
         recipe_common::print_collection(v, "v: ");
 
         auto sorted = std::is_sorted(v.cbegin(), v.cend());
@@ -105,11 +99,16 @@ void execute()
 
     // find a sorted subrange from beginning of a range
     {
-        std::vector<int> v { 3, 13, 5, 8, 1, 2, 1 };
+        std::vector<int> v { 3, 13, 5, 8, 0, 1, 2, 1 };
         recipe_common::print_collection(v, "v: ");
 
-        auto it = std::is_sorted_until(v.cbegin(), v.cend());
-        std::cout << "v: is_sorted until " << std::distance(v.cbegin(), it) << std::endl;
+        auto itr = std::is_sorted_until(v.cbegin(), v.cend());
+        std::cout << "v: is_sorted (<) until " <<
+                std::distance(v.cbegin(), itr) << std::endl;
+
+        itr = std::is_sorted_until(v.cbegin(), v.cend(), std::greater<>());
+        std::cout << "v: is_sorted (>) until " <<
+                std::distance(v.cbegin(), itr) << std::endl;
     }
 }
 
