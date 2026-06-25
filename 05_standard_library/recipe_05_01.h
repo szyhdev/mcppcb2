@@ -2,28 +2,22 @@
 
 #include "recipe_05_common.h"
 
-#include <iostream>
-#include <list>
-#include <vector>
-
 namespace recipe_05_01
 {
 
-using namespace std::string_literals;
-
 struct foo
 {
-    int a;
-    double b;
-    std::string c;
+    int i;
+    double d;
+    std::string s;
 
-    foo (int a, double b, std::string const &c) : a(a), b(b), c(c) {
+    foo (int i, double d, std::string const &s) : i(i), d(d), s(s) {
     }
 };
 
 std::ostream &operator <<(std::ostream &os, foo const &f)
 {
-    os << "(" << f.a << ", " << f.b << ", " << f.c << ") ";
+    os << "(" << f.i << ", " << f.d << ", " << f.s << ")";
     return os;
 }
 
@@ -69,12 +63,14 @@ void execute()
         recipe_common::print_collection(v21, "v21: ");
 
         std::vector<int> v22;
-        v22.insert(v22.begin(), arr, arr + 3);
+        v22.insert(v22.begin(), arr + 1, arr + 4);
         recipe_common::print_collection(v22, "v22: ");
 
+        // emplace_back and emplace
         std::vector<foo> v3;
-        v3.emplace_back(1, 1.0, "one"s);
-        v3.emplace(v3.begin(), 2, 2.0, "two"s);
+        v3.emplace_back(1, 1.0, "one");
+        recipe_common::print_collection(v3, "v3: ");
+        v3.emplace(v3.begin(), 2, 2.0, "two");
         recipe_common::print_collection(v3, "v3: ");
         std::cout << std::endl;
     }
@@ -104,6 +100,7 @@ void execute()
         std::vector<int> v5 { 10, 20, 30 };
         recipe_common::print_collection(v5, "v5: ");
         v4.swap(v5);
+        recipe_common::print_collection(v4, "v4: ");
         recipe_common::print_collection(v5, "v5: ");
 
         // clear
@@ -115,7 +112,7 @@ void execute()
         // erase
         std::vector<int> v7 { 1, 2, 3, 4, 5 };
         recipe_common::print_collection(v7, "v7: ");
-        v7.erase(v7.begin() + 2, v7.begin() + 4);
+        v7.erase(v7.begin() + 1, v7.begin() + 4);
         recipe_common::print_collection(v7, "v7: ");
         std::cout << std::endl;
     }

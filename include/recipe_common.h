@@ -12,6 +12,7 @@
 #include <execution>
 #include <functional>
 #include <future>
+#include <iomanip>
 #include <iostream>
 #include <latch>
 #include <list>
@@ -45,6 +46,17 @@ void print_collection(const T &coll, const std::string &prefix = "")
 }
 
 template <typename T>
+void print_array(T const *const arr, size_t const size,
+        const std::string &prefix = "")
+{
+    std::cout << prefix;
+    for (size_t i = 0; i < size; ++i) {
+        std::cout << arr[i] << " ";
+    }
+    std::cout << std::endl;
+}
+
+template <typename T>
 void print_queue(const std::queue<T> &q, const std::string &prefix = "")
 {
     std::cout << prefix;
@@ -61,7 +73,7 @@ template <typename Time = std::chrono::microseconds,
 struct perf_timer
 {
     template <typename F, typename ...Args>
-    static Time duration(F &&f, Args ...args) {
+    static Time duration(F &&f, Args &&...args) {
         auto start = Clock::now();
         std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
         auto end = Clock::now();
