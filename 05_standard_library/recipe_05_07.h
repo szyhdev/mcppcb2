@@ -2,18 +2,12 @@
 
 #include "recipe_05_common.h"
 
-#include <iostream>
-#include <algorithm>
-#include <array>
-#include <random>
-#include <vector>
-
 namespace recipe_05_07
 {
 
 void execute()
 {
-    // assign a value to all the elements of a range
+    // assign a value to all elements of a range
     {
         std::vector<int> v(5);
         std::fill(v.begin(), v.end(), 42);
@@ -31,7 +25,7 @@ void execute()
         recipe_common::print_collection(v, "v: ");
     }
 
-    // assign value returned by a function to the elements of a range
+    // assign value returned by a function to elements of a range
     {
         std::random_device rd {};
         std::mt19937 mt { rd() };
@@ -54,7 +48,7 @@ void execute()
         recipe_common::print_collection(v, "v: ");
     }
 
-    // assign sequentially increasing values to the elements of a range
+    // assign sequentially increasing values to elements of a range
     {
         std::vector<int> v(5);
         std::iota(v.begin(), v.end(), 1);
