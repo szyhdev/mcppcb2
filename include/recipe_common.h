@@ -20,11 +20,14 @@
 #include <numeric>
 #include <queue>
 #include <random>
+#include <ranges>
 #include <semaphore>
 #include <set>
 #include <sstream>
 #include <thread>
 #include <vector>
+
+#include <ctype.h>
 
 namespace recipe_common
 {
