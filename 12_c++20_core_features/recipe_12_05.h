@@ -2,9 +2,9 @@
 
 #include "recipe_12_common.h"
 
-// #define USE_RANGES_V3
+// #define USE_RANGE_V3
 
-#ifdef USE_RANGES_V3
+#ifdef USE_RANGE_V3
 
 #include "range/v3/algorithm/sort.hpp"
 #include "range/v3/algorithm/copy.hpp"
