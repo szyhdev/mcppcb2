@@ -114,7 +114,7 @@ template <typename T, typename = void>
 auto compute_ambiguous(T const a, T const b)
 {
     static_assert(!std::is_integral_v<T>, "A non-integral type expected");
-    return a + b;
+    return a * b;
 }
 
 template <typename T, typename = EnableIf<std::is_integral<T>>>
@@ -127,7 +127,7 @@ template <typename T, typename = DisableIf<std::is_integral<T>>,
         typename = void>
 auto compute(T const a, T const b)
 {
-    return a + b;
+    return a * b;
 }
 
 void execute()
