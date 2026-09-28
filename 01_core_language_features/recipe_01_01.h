@@ -1,25 +1,30 @@
 #pragma once
 
-#include <iostream>
-#include <atomic>
-#include <map>
-#include <memory>
-#include <vector>
+#include "recipe_01_common.h"
 
 namespace recipe_01_01
 {
 
 using namespace std::string_literals;
 
-int print_value(int value)
+#if !defined(USE_TEMPLATE)
+
+auto func(auto x, auto y)
 {
-    return value;
+    std::cout << "func(auto, auto)" << std::endl;
+    return x + y;
 }
 
-template <typename F, typename T>
-auto apply(F &&f, T value) {
-    return f(value);
+#else
+
+template <typename T, typename U>
+auto func(T a, U b)
+{
+    std::cout << "func(T, U)" << std::endl;
+    return a + b;
 }
+
+#endif
 
 class foo
 {
@@ -32,84 +37,121 @@ public:
     int &get() {
         return x_;
     }
+
+    int get() const {
+        return x_;
+    }
 };
 
-auto proxy_get_wrong(foo &f)
+namespace v1
+{
+    auto make_double(int const i) -> int
+    {
+        return 2 * i;
+    }
+}
+
+namespace v2
+{
+    auto make_double(int const i)
+    {
+        return 2 * i;
+    }
+}
+
+// wrong version
+// auto proxy_get(foo &f)
+// {
+//     return f.get();
+// }
+
+// right version
+auto &proxy_get(foo &f)
 {
     return f.get();
 }
 
-decltype(auto) proxy_get_right(foo &f)
+// all-purpose version
+template <typename T>
+decltype(auto) proxy_get(T &&f)
 {
     return f.get();
 }
 
-auto func1(int const i) -> int
+int get_int(int value)
 {
-    return 2 * i;
+    return value;
 }
 
-auto func2(int const i)
+double get_double(double value)
 {
-    return 2 * i;
+    return value;
+}
+
+template <typename F, typename T>
+auto apply(F &&f, T value)
+{
+    return f(value);
 }
 
 struct
 {
     template <typename T, typename U>
-    auto operator()(T const a, U const b) const {
+    auto operator ()(T const a, U const b) const {
         return a + b;
     }
-} stadd;
+} sadd;
 
 void execute()
 {
-    // declare local variables with the form 'auto name = expression'
+    // usage 1: define local variables
     {
-        auto i = 42;           // int
-        auto d = 42.5;         // double
-        auto s = "text";       // char const *
-        auto v = { 1, 2, 3 };  // std::initializer_list<int>
+        // in the form of "auto name = expression"
+        auto i = 42;            // int
+        auto d = 42.5;          // double
+        auto s1 = "text";       // char const *
+        auto v1 = { 1, 2, 3 };  // std::initializer_list<int>
+
+        // in the form of "auto name = type-id { expression }"
+        auto ar = new char[10] { 0 };            // char *
+        auto s2 = std::string { "text" };        // std::string
+        auto v2 = std::vector<int> { 1, 2, 3 };  // std::vector<int>
+        auto p = std::make_shared<int>(42);      // std::shared_ptr<int>
     }
 
-    // declare local variables with the form 'auto name = type-id { expression }'
+    // usage 2: declare named lambda functions
     {
-        auto b = new char[10] { 0 };            // char *
-        auto s = std::string { "text" };        // std::string
-        auto v = std::vector<int> { 1, 2, 3 };  // std::vector<int>
-        auto p = std::make_shared<int>(42);     // std::shared_ptr<int>
-    }
-
-    // declare named lambda functions with the form 'auto name = lambda-expression'
-    {
+        // in the form "auto name = lambda-expression"
         auto upper = [] (char const c) {
             return toupper(c);
         };
     }
 
-    // declare lambda parameters and return values
+    // usage 3: declare lambda parameters and return values
     {
         auto add = [] (auto const a, auto const b) {
             return a + b;
         };
     }
 
-    // declare a function return type
+    // usage 4: declare a function return type
     {
-        auto result = apply(print_value, 100);
-        std::cout << result << std::endl;
+        auto res1 = apply(get_int, 100);
+        std::cout << res1 << std::endl;
+        auto res2 = apply(get_double, 3.14);
+        std::cout << res2 << std::endl;
+        std::cout << std::endl;
     }
 
-    // use the correct type and implicit conversion won't occur
+    // advantage 2: use correct type and implicit conversion won't occur
     {
         auto v = std::vector<int> { 1, 2, 3 };
-
         int size1 = v.size();              // implicit conversion
         auto size2 = v.size();             // OK
         // auto size3 = int { v.size() };  // warning: narrowing conversion
     }
 
-    // less typing and less concern for actual types
+    // advantage 4: less typing and less concern for actual types
     {
         std::map<int, std::string> m {
             { 1, "one" },
@@ -117,19 +159,25 @@ void execute()
             { 3, "three" }
         };
 
-        for (std::map<int, std::string>::const_iterator it = m.cbegin();
-                it != m.cend(); ++it) {
-            std::cout << "(" << it->first << ", " << it->second << ") ";
+        for (std::map<int, std::string>::const_iterator itr = m.cbegin();
+                itr != m.cend(); ++itr) {
+            std::cout << "(" << itr->first << ", " << itr->second << ") ";
         }
         std::cout << std::endl;
 
-        for (auto it = m.cbegin(); it != m.cend(); ++it) {
-            std::cout << "(" << it->first << ", " << it->second << ") ";
+        for (auto itr = m.cbegin(); itr != m.cend(); ++itr) {
+            std::cout << "(" << itr->first << ", " << itr->second << ") ";
         }
+        std::cout << std::endl;
+
+        for (auto &e : m) {
+            std::cout << "(" << e.first << ", " << e.second << ") ";
+        }
+        std::cout << std::endl;
         std::cout << std::endl;
     }
 
-    // provides a consistent coding style with the type always on the right side
+    // advantage 5: provides a consistent coding style with type always on the right side
     {
         int *p1 = new int(42);
         delete p1;
@@ -137,25 +185,28 @@ void execute()
         delete p2;
     }
 
-    // auto is a placeholder for the type, not for the const/volatile and references specifiers
+    // note 1: auto is a placeholder for type, not for const/volatile and references specifiers
     {
         foo f(42);
 
         auto x = f.get();
         x = 100;
-        std::cout << f.get() << ", " << x << std::endl;  // 42, 100
+        std::cout << x << ", " << f.get() << std::endl;
 
         auto &y = f.get();
         y = 100;
-        std::cout << f.get() << ", " << y << std::endl;  // 100, 100
+        std::cout << y << ", " << f.get() << std::endl;
+        std::cout << std::endl;
     }
 
-    // don't use auto for types that are not moveable
+    // note 2: don't use auto for types that are not moveable
     {
         auto ai = std::atomic<int>(42);  // error in c++11/14
+        std::atomic<int> ai1(42);        // OK
+        std::atomic<int> ai2 { 42 };     // OK
     }
 
-    // don't use auto for multi-word types, such as long long
+    // note 3: don't use auto for multi-word types, such as long long
     {
         // auto l1 = long long { 42 };  // error
         using llong = long long;
@@ -163,31 +214,37 @@ void execute()
         auto l3 = 42LL;                 // OK
     }
 
-    // specify the return type from a function
+    // scenario 1: specify return type of a function
     {
-        auto x = func1(3);  // a trailing return type required in C++11
-        auto y = func2(4);  // the return value type deduced by the compiler in C++14
+        auto x = v1::make_double(3);  // a trailing return type required in C++11
+        auto y = v2::make_double(4);  // the return value type deduced by the compiler in C++14
     }
 
-    // deduce the return type of a wrapper function, whether it is a value or a reference
+    // scenario 2: deduce return type of a wrapper function, value or reference
     {
-        auto f1 = foo { 42 };
-        // auto &x = proxy_get_wrong(f1);        // error: cannot convert from 'int' to 'int &'
+        foo f1(42);
+        auto &p1 = proxy_get(f1);
+        static_assert(std::is_same_v<decltype(p1), int &>);
+        decltype(auto) p2 = proxy_get(f1);
+        static_assert(std::is_same_v<decltype(p2), int &>);
 
-        auto f2 = foo { 42 };
-        decltype(auto) y = proxy_get_right(f2);  // 'decltype(auto)' introduced in C++14
+        foo const f2(42);
+        decltype(auto) p3 = proxy_get(f2);
+        static_assert(std::is_same_v<decltype(p3), int>);
     }
 
-    // use auto with generic lambdas
+    // scenario 3: use auto with generic lambda
     {
         auto ladd = [] (auto const a, auto const b) {
             return a + b;
         };
 
-        auto i = ladd(40, 2);             // 42
-        auto s = ladd("forty"s, "two"s);  // "fortytwo"s
-        auto x = stadd(12, 34);           // 46
-        std::cout << i << ", " << s << ", " << x << std::endl;
+        auto i1 = ladd(40, 2);
+        auto s1 = ladd("forty"s, " two"s);
+        auto i2 = sadd(40, 2);
+        auto s2 = sadd("forty"s, " two"s);
+        std::cout << i1 << ", " << s1 << std::endl;
+        std::cout << i2 << ", " << s2 << std::endl;
     }
 }
 
