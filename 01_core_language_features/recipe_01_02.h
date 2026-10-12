@@ -1,7 +1,6 @@
 #pragma once
 
-#include <iostream>
-#include <vector>
+#include "recipe_01_common.h"
 
 namespace recipe_01_02
 {
