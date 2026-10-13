@@ -25,6 +25,10 @@ public:
 
     bar(int a, double b = 0.0) : a_(a), b_(b) {
     }
+
+    void print() const {
+        std::cout << a_ << ", " << b_ << std::endl;
+    }
 };
 
 struct pod_type
@@ -121,6 +125,44 @@ void execute()
 
     // examples of uniform initialization
     {
+        // built-in types
+        int i { 42 };
+        double d { 1.2 };
+        bool c { false };
+
+        // user-defined non-aggregate type
+        bar b1;
+        b1.print();
+        bar b2 {};
+        b2.print();
+        bar b3 { 42, 1.2 };
+        b3.print();
+        bar b4 { 42 };
+        b4.print();
+
+        // user-defined aggregate type
+        three_int ti1;
+        std::cout << ti1.a << ", " << ti1.b << ", " << ti1.c << std::endl;
+        three_int ti2 {};
+        std::cout << ti2.a << ", " << ti2.b << ", " << ti2.c << std::endl;
+        three_int ti3 { 1, 2, 3 };
+        std::cout << ti3.a << ", " << ti3.b << ", " << ti3.c << std::endl;
+        three_int ti4 { 1, 2 };
+        std::cout << ti4.a << ", " << ti4.b << ", " << ti4.c << std::endl;
+        std::cout << std::endl;
+
+        // pod type
+        pod_type pt { 42, 1.2 };
+        static_assert(std::is_standard_layout_v<pod_type> &&
+                std::is_trivial_v<pod_type>);
+        static_assert(std::is_aggregate_v<pod_type>);
+
+        // array and dynamic array
+        int ar1[] { 1, 2, 3, 4, 5 };
+        int ar2[3] { 1, 2, 3 };
+        int *ar = new int[3] { 1, 2, 3 };
+        delete [] ar;
+
         // standard containers
         std::vector<int> v { 1, 2, 3 };
         std::map<int, std::string> m {
@@ -128,27 +170,6 @@ void execute()
             { 2, "two" },
             { 3, "three" }
         };
-
-        // arrays
-        int ar1[] { 1, 2, 3, 4, 5 };
-        int ar2[3] { 1, 2, 3 };
-        int *ar = new int[3] { 1, 2, 3 };
-        delete [] ar;
-
-        // built-in types
-        int i { 42 };
-        double d { 1.2 };
-
-        // user-defined types
-        bar b1;
-        bar b2 { 42, 1.2 };
-        bar b3 { 42 };
-
-        // pod type
-        pod_type pt { 42, 1.2 };
-        static_assert(std::is_standard_layout_v<pod_type> &&
-                std::is_trivial_v<pod_type>);
-        static_assert(std::is_aggregate_v<pod_type>);
     }
 
     // an initializer list takes precedence over other constructors or
@@ -156,27 +177,23 @@ void execute()
     {
         baz b { 1, 2 };
         func({ 1, 2, 3 });
-        std::cout << std::endl;
     }
 
     // initialization with '{}' or '()'
     {
         std::vector<int> v1 { 5 };
-        std::cout << "v1.size() = " << v1.size() << std::endl;
+        assert(v1.size() == 1);
         std::vector<int> v2(5);
-        std::cout << "v2.size() = " << v2.size() << std::endl;
+        assert(v2.size() == 5);
     }
 
     // brace-initialization doesn't allow narrowing conversion
     {
         // int i { 1.2 };  	                 // error
         int i { static_cast<int>(1.2) };     // OK
-
         double d = 47 / 13;
-
         // float f1 { d };                   // error
         float f1 { static_cast<float>(d) };  // OK
-
         float f2 { 47 / 13 };                // OK
     }
 
